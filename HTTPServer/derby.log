@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Tue May 27 17:31:44 CEST 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0146-3e4f-03fb-000004d6c578 
+on database directory C:\Entwiklung\EclipseWorkspaces\eclipse_java\HTTPServer\DB with class loader sun.misc.Launcher$AppClassLoader@3b061299 
+Loaded from file:/C:/Entwiklung/EclipseWorkspaces/eclipse_java/HTTPServer/lib/derby-10.10.2.0.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_45-b18
+user.dir=C:\Entwiklung\EclipseWorkspaces\eclipse_java\HTTPServer
+os.name=Windows 7
+os.arch=amd64
+os.version=6.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
