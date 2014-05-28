@@ -3,6 +3,7 @@ function Controler () {
     
     var name;
     var password;
+    var routeName;
     
     function main () {
 
@@ -10,21 +11,53 @@ function Controler () {
         $("#btnLogIn").click( logIn );
         $("#btnLogOut").click( logOut );
         $("#addRoute").click( addRoute );
+        $("#getRoutes").click( getRoutes );
+        $("#addTrackPoint").click( addTrackPoint );
+        $("#getTrackPoints").click( getTrackPoints );
 
     };
     
-    function addRoute () {
-        var destination = server + "/logOut";
-        var route = {
-            name:"routenName"
+    // füge trackpoint zur rute mit dem index 0 hinzu
+    function addTrackPoint () {
+        var destination = server + "/addTrackPoint";
+        var send = {
+            routeIndex:0,
+            trackPoint:new TrackPoint()
         };
-        serverRequest ( route, destination, showOutput );
+        console.log(send);
+        serverRequest ( send, destination );
+    }
+    
+    // hole trackpoints von rute mit dem index 0
+    function getTrackPoints () {
+        var destination = server + "/getTrackPoints";
+        var route = {
+            index:0
+        };
+        serverRequest ( route, destination );
+    }
+    
+    function getRoutes () {
+        var destination = server + "/getRoutes";
+        var route = {
+            name:routeName
+        };
+        serverRequest ( route, destination );
+    }
+    
+    function addRoute () {
+        readInputFealds();
+        var destination = server + "/addRoute";
+        var route = {
+            name:routeName
+        };
+        serverRequest ( route, destination );
     }
     
     function logOut () {
         var destination = server + "/logOut";
         
-        serverRequest ( null, destination, showOutput );
+        serverRequest ( null, destination );
     }
     
     function logIn () {
@@ -37,7 +70,7 @@ function Controler () {
             password : password
         };
         
-        serverRequest ( user, destination, showOutput );
+        serverRequest ( user, destination );
     }
     
     function registration () {
@@ -50,19 +83,13 @@ function Controler () {
             password : password
         };
         
-        serverRequest ( user, destination, showOutput );
+        serverRequest ( user, destination );
     }
     
     function readInputFealds () {
         name = $("#inputUserName").val();
         password = $("#inputUserPass").val();
-    }
-    
-    function showOutput ( json ) {
-        console.log ( json );
-        $("#serverOut").html(
-                $("#serverOut").html() + "<br>" + json.serverMessge
-        );
+        routeName = $("#inputRoute").val();
     }
     
     function serverRequest ( json, destination, callback ) {
@@ -77,10 +104,20 @@ function Controler () {
                 console.log(b);
                 console.log(c);
             }
-        }).done ( callback ).fail ( function ( info ) {
+        }).done ( function ( json ) {
+            console.log(json);
+        }).fail ( function ( info ) {
             console.log(info);
         });
     }
     
     main ();
 };
+
+function TrackPoint () {
+    this.latitude = parseInt(Math.random()*100000000000);
+    this.longitude = parseInt(Math.random()*100000000000);
+    this.altitude = parseInt(Math.random()*100000000000);
+    this.timestamp = parseInt(Math.random()*100000000000);
+    this.isCheckPoint = false;
+}

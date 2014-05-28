@@ -25,6 +25,10 @@ public class UserManager {
 	db = PersistenceFacade.getDBController();
 
     }
+    
+    public void upDate (User user) {
+	db.update(user.getDBUser());
+    }
 
     public User getUser(String sessionID) {
 
@@ -40,7 +44,6 @@ public class UserManager {
     }
     
     public String register (String userName, String password, User user) throws NoSuchAlgorithmException {
-
 	// check if username exist
 	List<DBUser> users = db.readAll(DBUser.class);
 	for (DBUser dbUser : users) {
@@ -103,7 +106,7 @@ public class UserManager {
 	    throws NoSuchAlgorithmException {
 
 	// generate md5 String
-	byte[] pwBytes = (string).getBytes();
+	byte[] pwBytes = string.getBytes();
 
 	MessageDigest md = MessageDigest.getInstance("MD5");
 

@@ -6,9 +6,14 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
+
 import de.general.Log;
+import de.httpServer.ClientClasses.ClientAddTreckPoint;
+import de.httpServer.ClientClasses.ClientRoute;
 import de.httpServer.ClientClasses.ClientUser;
 
 public class ServerRequest extends Request {
@@ -16,7 +21,8 @@ public class ServerRequest extends Request {
     private String jsonString;
     private final HttpExchange httpExchange;
     private final String encoding = "UTF-8";
-    private final Gson gson = new Gson();
+    private final Gson gsonOut = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+    private final Gson gsonIn = new Gson();
     Map<String, Object> replyJson = new HashMap<String, Object>();
     private User user;
 
@@ -36,6 +42,16 @@ public class ServerRequest extends Request {
 	}
 
 	final String uri = httpExchange.getRequestURI().toString();
+	handleURICommand(uri, userManager);
+
+	replyJson.put("logedIn", user.isLogedIn());
+
+	// convert serverReply to sendable content
+	String json = gsonOut.toJson(replyJson);
+	content = json.getBytes();
+    }
+    
+    private void handleURICommand ( String uri, UserManager userManager ) throws Exception {
 
 	if (uri.indexOf("registration") != -1) {
 	    readInputStream();
@@ -50,19 +66,38 @@ public class ServerRequest extends Request {
 	else if (uri.indexOf("logOut") != -1) {
 	    userManager.logOut(user);
 	}
+	else if (uri.indexOf("addRoute") != -1) {
+	    readInputStream();
+	    ClientRoute clientRoute = convertToClientRoute(jsonString);
+	    Route r = new Route(clientRoute.name);
+	    user.getDBUser().addRoute(r);
+	    userManager.upDate(user);
+	}
+	else if (uri.indexOf("getRoutes") != -1) {
+	    replyJson.put("routes", user.getDBUser().getRoutes());
+	}
+	else if (uri.indexOf("getTrackPoints") != -1) {
+	    readInputStream();
+	    ClientRoute clientRoute = convertToClientRoute(jsonString);
+	    replyJson.put("trackPoint", user.getDBUser().getTrackPoints(clientRoute.index));
+	}
+	else if (uri.indexOf("addTrackPoint") != -1) {
+	    readInputStream();
+	    ClientAddTreckPoint catp = gsonIn.fromJson(jsonString, ClientAddTreckPoint.class);
+	    user.getDBUser().addTreckPoint( catp.routeIndex, catp.trackPoint );
+	    userManager.upDate(user);
+	}
 	else {
 	    replyJson.put("Unexpectrd URI", uri);
 	}
-
-	replyJson.put("logedIn", user.isLogedIn());
-
-	// convert serverReply to sendable content
-	String json = gson.toJson(replyJson);
-	content = json.getBytes();
+	
     }
     
     private ClientUser convertToClientUser ( String jsonString ) {
-	return ( gson.fromJson(jsonString, ClientUser.class) );
+	return ( gsonIn.fromJson(jsonString, ClientUser.class) );
+    }
+    private ClientRoute convertToClientRoute ( String jsonString ) {
+	return ( gsonIn.fromJson(jsonString, ClientRoute.class) );
     }
 
     private String getSessionID(HttpExchange httpExchange) {
