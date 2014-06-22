@@ -1,11 +1,18 @@
 package de.httpServer;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -86,6 +93,8 @@ public class ServerRequest extends Request {
 	    ClientAddTreckPoint catp = gsonIn.fromJson(jsonString, ClientAddTreckPoint.class);
 	    user.getDBUser().addTreckPoint( catp.routeIndex, catp.trackPoint );
 	    userManager.upDate(user);
+	} else if ( uri.indexOf("uploadFile") != -1 ) {
+	    saveFile();
 	}
 	else {
 	    replyJson.put("Unexpectrd URI", uri);
@@ -126,6 +135,67 @@ public class ServerRequest extends Request {
     private void sendNewSID(String SID) {
 	// send the sessionID to browser
 	httpExchange.getResponseHeaders().add("Set-Cookie", "SessionID=" + SID);
+    }
+    
+    private void saveFile () throws IOException {
+	
+	Map test = httpExchange.getRequestHeaders();
+	
+	String subFolder;
+	InputStream in = httpExchange.getRequestBody();
+	byte[] byteArray;
+	String fileNane;
+
+	try {
+	    ByteArrayOutputStream out = new ByteArrayOutputStream();
+	    byte buf[] = new byte[4096];
+	    for (int n = in.read(buf); n > 0; n = in.read(buf)) {
+		out.write(buf, 0, n);
+	    }
+	    
+	    byteArray = out.toByteArray();
+	    fileNane = new String(out.toByteArray(), encoding);
+	}
+	finally {
+	    in.close();
+	}
+	
+	String fn = "filename=";
+	int index = fileNane.indexOf ( fn ) + fn.length() + 1;
+	fileNane = fileNane.substring( index );
+	index = fileNane.indexOf ( '"' );
+	fileNane = fileNane.substring( 0, index );
+	
+	Log.log(fileNane);
+	
+	int start = 0;
+	int end = 0;
+	for (int i = 0; i < byteArray.length - 4; i++) {
+	    if ((byteArray[i] == 13 && byteArray[i+2] == 13) && (byteArray[i+1] == 10 && byteArray[i+3] == 10)) {
+		start = i+4;
+		break;
+	    }
+	}
+	
+	for (int i = byteArray.length - 2; i > 0; i--) {
+	    if ( (byteArray[i-1] == 13 && byteArray[i] == 10)) {
+		end = i-1;
+		break;
+	    }
+	}
+	
+	byteArray = Arrays.copyOfRange(byteArray, start, end);
+	
+	if (fileNane.indexOf( ".jpg" ) != -1) {
+	    subFolder = "images/";
+	} else {
+	    subFolder = "kmls/";
+	}
+	
+	FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/http/" + subFolder + fileNane);
+	fos.write(byteArray);
+	fos.close();
+	
     }
 
     private void readInputStream() throws IOException {

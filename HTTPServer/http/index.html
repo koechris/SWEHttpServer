@@ -20,5 +20,16 @@
         <div id="getRoutes" style="cursor: pointer">getRoutes</div>
         <div id="addTrackPoint" style="cursor: pointer">addTrackPoint</div>
         <div id="getTrackPoints" style="cursor: pointer">getTrackPoints</div>
+        <div id="uploadFileStart" style="cursor: pointer">uploadFileStart</div>
+        
+        <form action="serverRequest/uploadFile" method="post" enctype="multipart/form-data">
+            <input id="uploadFile" name="Datei" type="file">
+            <input type="submit" value="Upload">
+        </form>
+        
+        <form action="serverRequest/uploadFile" method="post" enctype="multipart/mixed">
+            <input type="file" name="upload[]" multiple>
+            <button type="submit">Hochladen</button>
+        </form>
     </body>
 </html>
